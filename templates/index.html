@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Football AI Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e6ed;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, #00d4ff15 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, #ff006615 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, #39ff1415 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #ffffff;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            font-weight: 900;
+            background: linear-gradient(45deg, #00d4ff, #ff0066, #39ff14);
+            background-size: 300% 300%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient-shift 3s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.8;
+            color: #a0a6b8;
+            letter-spacing: 0.5px;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0;
+            overflow: hidden;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            margin-bottom: 0;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: transparent;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #a0a6b8;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .tab:hover::before {
+            left: 100%;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #ffffff;
+            box-shadow: 
+                0 0 20px rgba(0, 212, 255, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: none;
+            padding: 40px;
+            border-radius: 0;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #e0e6ed;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            color: #ffffff;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 
+                0 0 0 2px rgba(0, 212, 255, 0.2),
+                inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-group select option {
+            background: #1a1a2e;
+            color: #ffffff;
+        }
+
+        .predict-btn {
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: #ffffff;
+            border: none;
+            padding: 16px 48px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 0;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 8px 25px rgba(0, 212, 255, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .predict-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .predict-btn:hover::before {
+            left: 100%;
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 12px 35px rgba(0, 212, 255, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .predict-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #00d4ff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-card {
+            display: none;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 50%, #006699 100%);
+            color: #ffffff;
+            padding: 40px;
+            border-radius: 0;
+            margin-top: 30px;
+            text-align: center;
+            box-shadow: 
+                0 15px 35px rgba(0, 212, 255, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-card.show {
+            display: block;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .prediction-score {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            text-shadow: 
+                0 0 20px rgba(255, 255, 255, 0.5),
+                0 0 40px rgba(0, 212, 255, 0.3);
+            background: linear-gradient(45deg, #ffffff, #00d4ff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .weather-info {
+            display: none;
+            background: rgba(33, 150, 243, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(33, 150, 243, 0.3);
+            color: #ffffff;
+            padding: 25px;
+            border-radius: 0;
+            margin-top: 20px;
+            box-shadow: 
+                0 8px 25px rgba(33, 150, 243, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .weather-info.show {
+            display: block;
+        }
+
+        .rankings-container {
+            max-height: 600px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ranking-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .ranking-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(8px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.15);
+        }
+
+        .ranking-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .ranking-number {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #ffffff;
+            width: 45px;
+            height: 45px;
+            border-radius: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            margin-right: 20px;
+            box-shadow: 
+                0 4px 15px rgba(0, 212, 255, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .player-name {
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #ffffff;
+            font-size: 1.1rem;
+        }
+
+        .player-matchup {
+            color: #a0a6b8;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .projected-points {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 0;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: 
+                0 4px 15px rgba(102, 126, 234, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 20px;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .player-comparison {
+            text-align: center;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .player-comparison:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-5px);
+        }
+
+        .vs-text {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #00d4ff, #ff0066);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .recommendation {
+            padding: 15px 25px;
+            border-radius: 0;
+            margin-top: 20px;
+            font-weight: 700;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .recommendation.must-start {
+            background: linear-gradient(135deg, #39ff14, #2ecc40);
+            color: #000000;
+        }
+
+        .recommendation.good-start {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: #ffffff;
+        }
+
+        .recommendation.flex-option {
+            background: linear-gradient(135deg, #ff9800, #ff6600);
+            color: #ffffff;
+        }
+
+        .recommendation.bench {
+            background: linear-gradient(135deg, #ff006e, #cc0055);
+            color: #ffffff;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .comparison-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .vs-text {
+                order: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏈 Fantasy Football AI</h1>
+            <p>Advanced ML predictions for optimal lineup decisions</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('predict')">Player Prediction</button>
+            <button class="tab" onclick="switchTab('rankings')">Weekly Rankings</button>
+            <button class="tab" onclick="switchTab('compare')">Player Compare</button>
+        </div>
+
+        <!-- Player Prediction Tab -->
+        <div id="predict" class="tab-content active">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="playerName">Select Player:</label>
+                    <select id="playerName">
+                        <option value="">Choose a player...</option>
+                        <option value="Josh Allen|QB|BUF">Josh Allen (QB - BUF)</option>
+                        <option value="Lamar Jackson|QB|BAL">Lamar Jackson (QB - BAL)</option>
+                        <option value="Patrick Mahomes|QB|KC">Patrick Mahomes (QB - KC)</option>
+                        <option value="Dak Prescott|QB|DAL">Dak Prescott (QB - DAL)</option>
+                        <option value="Christian McCaffrey|RB|SF">Christian McCaffrey (RB - SF)</option>
+                        <option value="Derrick Henry|RB|BAL">Derrick Henry (RB - BAL)</option>
+                        <option value="Josh Jacobs|RB|GB">Josh Jacobs (RB - GB)</option>
+                        <option value="Saquon Barkley|RB|PHI">Saquon Barkley (RB - PHI)</option>
+                        <option value="Tyreek Hill|WR|MIA">Tyreek Hill (WR - MIA)</option>
+                        <option value="Davante Adams|WR|LV">Davante Adams (WR - LV)</option>
+                        <option value="Stefon Diggs|WR|HOU">Stefon Diggs (WR - HOU)</option>
+                        <option value="Cooper Kupp|WR|LAR">Cooper Kupp (WR - LAR)</option>
+                        <option value="Travis Kelce|TE|KC">Travis Kelce (TE - KC)</option>
+                        <option value="Mark Andrews|TE|BAL">Mark Andrews (TE - BAL)</option>
+                        <option value="George Kittle|TE|SF">George Kittle (TE - SF)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="opponent">Opponent:</label>
+                    <select id="opponent">
+                        <option value="MIA">Miami Dolphins</option>
+                        <option value="NE">New England Patriots</option>
+                        <option value="NYJ">New York Jets</option>
+                        <option value="BAL">Baltimore Ravens</option>
+                        <option value="CIN">Cincinnati Bengals</option>
+                        <option value="CLE">Cleveland Browns</option>
+                        <option value="PIT">Pittsburgh Steelers</option>
+                        <option value="HOU">Houston Texans</option>
+                        <option value="IND">Indianapolis Colts</option>
+                        <option value="JAX">Jacksonville Jaguars</option>
+                        <option value="TEN">Tennessee Titans</option>
+                        <option value="DEN">Denver Broncos</option>
+                        <option value="KC">Kansas City Chiefs</option>
+                        <option value="LV">Las Vegas Raiders</option>
+                        <option value="LAC">Los Angeles Chargers</option>
+                        <option value="DAL">Dallas Cowboys</option>
+                        <option value="NYG">New York Giants</option>
+                        <option value="PHI">Philadelphia Eagles</option>
+                        <option value="WAS">Washington Commanders</option>
+                        <option value="CHI">Chicago Bears</option>
+                        <option value="DET">Detroit Lions</option>
+                        <option value="GB">Green Bay Packers</option>
+                        <option value="MIN">Minnesota Vikings</option>
+                        <option value="ATL">Atlanta Falcons</option>
+                        <option value="CAR">Carolina Panthers</option>
+                        <option value="NO">New Orleans Saints</option>
+                        <option value="TB">Tampa Bay Buccaneers</option>
+                        <option value="ARI">Arizona Cardinals</option>
+                        <option value="LAR">Los Angeles Rams</option>
+                        <option value="SF">San Francisco 49ers</option>
+                        <option value="SEA">Seattle Seahawks</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="homeAway">Home/Away:</label>
+                    <select id="homeAway">
+                        <option value="HOME">Home</option>
+                        <option value="AWAY">Away</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="week">Week:</label>
+                    <select id="week">
+                        <option value="1">Week 1</option>
+                        <option value="2">Week 2</option>
+                        <option value="3">Week 3</option>
+                        <option value="4">Week 4</option>
+                        <option value="5">Week 5</option>
+                        <option value="6">Week 6</option>
+                        <option value="7">Week 7</option>
+                        <option value="8" selected>Week 8</option>
+                        <option value="9">Week 9</option>
+                        <option value="10">Week 10</option>
+                        <option value="11">Week 11</option>
+                        <option value="12">Week 12</option>
+                        <option value="13">Week 13</option>
+                        <option value="14">Week 14</option>
+                        <option value="15">Week 15</option>
+                        <option value="16">Week 16</option>
+                        <option value="17">Week 17</option>
+                        <option value="18">Week 18</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="avgPoints">Avg Points (Last 3 Games):</label>
+                    <input type="number" id="avgPoints" step="0.1" value="15.0" min="0" max="50">
+                </div>
+
+                <div class="form-group">
+                    <label for="vegasTotal">Vegas Game Total:</label>
+                    <input type="number" id="vegasTotal" step="0.5" value="47.5" min="30" max="70">
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="predict-btn" onclick="predictPlayer()">🔮 Generate Prediction</button>
+            </div>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Analyzing player data and generating prediction...</p>
+            </div>
+
+            <div id="predictionResult" class="result-card">
+                <div id="predictionScore" class="prediction-score">0.0</div>
+                <div>Projected Fantasy Points</div>
+                <div id="predictionDetails" style="margin-top: 20px; text-align: left;"></div>
+                <div id="recommendationBadge" class="recommendation"></div>
+            </div>
+
+            <div id="weatherInfo" class="weather-info">
+                <div id="weatherDetails"></div>
+            </div>
+        </div>
+
+        <!-- Weekly Rankings Tab -->
+        <div id="rankings" class="tab-content">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="rankingPosition">Position:</label>
+                    <select id="rankingPosition">
+                        <option value="QB">Quarterback (QB)</option>
+                        <option value="RB">Running Back (RB)</option>
+                        <option value="WR">Wide Receiver (WR)</option>
+                        <option value="TE">Tight End (TE)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="rankingWeek">Week:</label>
+                    <select id="rankingWeek">
+                        <option value="8" selected>Week 8</option>
+                        <option value="9">Week 9</option>
+                        <option value="10">Week 10</option>
+                        <option value="11">Week 11</option>
+                        <option value="12">Week 12</option>
+                        <option value="13">Week 13</option>
+                        <option value="14">Week 14</option>
+                        <option value="15">Week 15</option>
+                        <option value="16">Week 16</option>
+                        <option value="17">Week 17</option>
+                        <option value="18">Week 18</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="predict-btn" onclick="generateRankings()">📊 Generate Rankings</button>
+            </div>
+
+            <div class="rankings-container">
+                <div id="rankingsList"></div>
+            </div>
+        </div>
+
+        <!-- Player Compare Tab -->
+        <div id="compare" class="tab-content">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="comparePlayer1">Player 1:</label>
+                    <select id="comparePlayer1">
+                        <option value="">Choose first player...</option>
+                        <option value="Josh Allen|QB|BUF">Josh Allen (QB - BUF)</option>
+                        <option value="Lamar Jackson|QB|BAL">Lamar Jackson (QB - BAL)</option>
+                        <option value="Patrick Mahomes|QB|KC">Patrick Mahomes (QB - KC)</option>
+                        <option value="Christian McCaffrey|RB|SF">Christian McCaffrey (RB - SF)</option>
+                        <option value="Derrick Henry|RB|BAL">Derrick Henry (RB - BAL)</option>
+                        <option value="Tyreek Hill|WR|MIA">Tyreek Hill (WR - MIA)</option>
+                        <option value="Davante Adams|WR|LV">Davante Adams (WR - LV)</option>
+                        <option value="Travis Kelce|TE|KC">Travis Kelce (TE - KC)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="comparePlayer2">Player 2:</label>
+                    <select id="comparePlayer2">
+                        <option value="">Choose second player...</option>
+                        <option value="Josh Allen|QB|BUF">Josh Allen (QB - BUF)</option>
+                        <option value="Lamar Jackson|QB|BAL">Lamar Jackson (QB - BAL)</option>
+                        <option value="Patrick Mahomes|QB|KC">Patrick Mahomes (QB - KC)</option>
+                        <option value="Christian McCaffrey|RB|SF">Christian McCaffrey (RB - SF)</option>
+                        <option value="Derrick Henry|RB|BAL">Derrick Henry (RB - BAL)</option>
+                        <option value="Tyreek Hill|WR|MIA">Tyreek Hill (WR - MIA)</option>
+                        <option value="Davante Adams|WR|LV">Davante Adams (WR - LV)</option>
+                        <option value="Travis Kelce|TE|KC">Travis Kelce (TE - KC)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="predict-btn" onclick="comparePlayers()">⚖️ Compare Players</button>
+            </div>
+
+            <div class="comparison-grid">
+                <div class="player-comparison" id="player1Result"></div>
+                <div class="vs-text">VS</div>
+                <div class="player-comparison" id="player2Result"></div>
+            </div>
+
+            <div id="comparisonAnalysis" style="margin-top: 30px; padding: 30px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0; display: none; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);">
+                <h3 style="color: #00d4ff; margin-bottom: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">AI Analysis:</h3>
+                <div id="comparisonDetails" style="color: #e0e6ed; line-height: 1.6;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        async function predictPlayer() {
+            const playerSelect = document.getElementById('playerName');
+            const selectedPlayer = playerSelect.value.split('|');
+            
+            if (!selectedPlayer[0]) {
+                alert('Please select a player');
+                return;
+            }
+
+            const playerData = {
+                name: selectedPlayer[0],
+                position: selectedPlayer[1],
+                team: selectedPlayer[2],
+                opponent: document.getElementById('opponent').value,
+                homeAway: document.getElementById('homeAway').value,
+                week: document.getElementById('week').value,
+                avgPoints: parseFloat(document.getElementById('avgPoints').value),
+                vegasTotal: parseFloat(document.getElementById('vegasTotal').value)
+            };
+
+            // Show loading
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('predictionResult').classList.remove('show');
+            document.getElementById('weatherInfo').classList.remove('show');
+
+            try {
+                // Simulate API call (replace with real API endpoint)
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Simulate ML prediction based on inputs
+                const prediction = simulateMLPrediction(playerData);
+                
+                // Hide loading
+                document.getElementById('loading').classList.remove('show');
+                
+                // Show results
+                document.getElementById('predictionScore').textContent = prediction.points.toFixed(1);
+                document.getElementById('predictionDetails').innerHTML = `
+                    <strong>AI Analysis:</strong><br>
+                    ${prediction.analysis.join('<br>')}
+                `;
+                
+                // Show recommendation
+                const recommendationBadge = document.getElementById('recommendationBadge');
+                recommendationBadge.textContent = prediction.recommendation;
+                recommendationBadge.className = `recommendation ${prediction.recommendationClass}`;
+                
+                document.getElementById('predictionResult').classList.add('show');
+                
+                // Show weather simulation
+                const weatherHtml = `
+                    <strong>Game Conditions:</strong><br>
+                    Temperature: ${prediction.weather.temperature}°F<br>
+                    Wind: ${prediction.weather.wind_speed} mph<br>
+                    Conditions: ${prediction.weather.conditions}<br>
+                    Fantasy Impact: ${prediction.weather.fantasy_impact}
+                `;
+                document.getElementById('weatherDetails').innerHTML = weatherHtml;
+                document.getElementById('weatherInfo').classList.add('show');
+                
+            } catch (error) {
+                document.getElementById('loading').classList.remove('show');
+                console.error('Prediction error:', error);
+                alert('Error making prediction. Please try again.');
+            }
+        }
+
+        function simulateMLPrediction(playerData) {
+            // Base scoring by position
+            const positionBase = {
+                'QB': { min: 12, max: 28, avg: 18 },
+                'RB': { min: 5, max: 25, avg: 12 },
+                'WR': { min: 3, max: 22, avg: 10 },
+                'TE': { min: 2, max: 18, avg: 8 }
+            };
+
+            const base = positionBase[playerData.position] || positionBase['WR'];
+            let prediction = base.avg;
+
+            // Adjust for recent performance
+            prediction += (playerData.avgPoints - base.avg) * 0.3;
+
+            // Vegas total adjustment
+            const vegasImpact = (playerData.vegasTotal - 47) * 0.2;
+            prediction += vegasImpact;
+
+            // Home/away adjustment
+            if (playerData.homeAway === 'HOME') {
+                prediction += 1.2;
+            }
+
+            // Team-specific adjustments
+            const teamBoosts = {
+                'BUF': 2, 'KC': 1.8, 'BAL': 1.5, 'SF': 1.3, 'DAL': 1.2,
+                'GB': 1.1, 'MIA': 1.0, 'PHI': 0.9
+            };
+            prediction += teamBoosts[playerData.team] || 0;
+
+            // Add some randomness for realism
+            prediction += (Math.random() - 0.5) * 3;
+            prediction = Math.max(0, prediction);
+
+            // Generate analysis
+            const analysis = [
+                `${playerData.position} averages ${base.avg} points in similar matchups`,
+                `Recent form (${playerData.avgPoints} avg) suggests ${playerData.avgPoints > base.avg ? 'positive' : 'negative'} trend`,
+                `Vegas total of ${playerData.vegasTotal} indicates ${playerData.vegasTotal > 47 ? 'high-scoring' : 'low-scoring'} game`,
+                `${playerData.homeAway === 'HOME' ? 'Home field advantage' : 'Road game challenges'} factored in`
+            ];
+
+            // Recommendation logic
+            let recommendation, recommendationClass;
+            if (prediction > 18) {
+                recommendation = "🔥 MUST START";
+                recommendationClass = "must-start";
+            } else if (prediction > 12) {
+                recommendation = "✅ GOOD START";
+                recommendationClass = "good-start";
+            } else if (prediction > 8) {
+                recommendation = "⚠️ FLEX OPTION";
+                recommendationClass = "flex-option";
+            } else {
+                recommendation = "❌ BENCH";
+                recommendationClass = "bench";
+            }
+
+            // Weather simulation
+            const weather = {
+                temperature: Math.floor(Math.random() * 40) + 40,
+                wind_speed: Math.floor(Math.random() * 15) + 3,
+                conditions: ['Clear', 'Partly Cloudy', 'Overcast', 'Light Rain'][Math.floor(Math.random() * 4)],
+                fantasy_impact: ['Minimal', 'Slight Negative', 'Moderate Negative'][Math.floor(Math.random() * 3)]
+            };
+
+            return {
+                points: prediction,
+                analysis,
+                recommendation,
+                recommendationClass,
+                weather
+            };
+        }
+
+        async function generateRankings() {
+            const position = document.getElementById('rankingPosition').value;
+            const week = document.getElementById('rankingWeek').value;
+            
+            try {
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Generate mock rankings
+                const mockPlayers = {
+                    'QB': [
+                        { name: 'Josh Allen', team: 'BUF', opponent: 'MIA', points: '24.8' },
+                        { name: 'Lamar Jackson', team: 'BAL', opponent: 'CLE', points: '23.2' },
+                        { name: 'Patrick Mahomes', team: 'KC', opponent: 'LV', points: '22.1' },
+                        { name: 'Josh Jacobs', team: 'GB', opponent: 'ARI', points: '21.5' },
+                        { name: 'Dak Prescott', team: 'DAL', opponent: 'SF', points: '20.8' }
+                    ],
+                    'RB': [
+                        { name: 'Christian McCaffrey', team: 'SF', opponent: 'DAL', points: '19.2' },
+                        { name: 'Derrick Henry', team: 'BAL', opponent: 'CLE', points: '17.8' },
+                        { name: 'Saquon Barkley', team: 'PHI', opponent: 'CIN', points: '16.5' },
+                        { name: 'Josh Jacobs', team: 'GB', opponent: 'ARI', points: '15.9' },
+                        { name: 'Alvin Kamara', team: 'NO', opponent: 'LAC', points: '14.7' }
+                    ],
+                    'WR': [
+                        { name: 'Tyreek Hill', team: 'MIA', opponent: 'BUF', points: '16.8' },
+                        { name: 'Davante Adams', team: 'LV', opponent: 'KC', points: '15.9' },
+                        { name: 'Stefon Diggs', team: 'HOU', opponent: 'IND', points: '15.2' },
+                        { name: 'Cooper Kupp', team: 'LAR', opponent: 'SEA', points: '14.8' },
+                        { name: 'A.J. Brown', team: 'PHI', opponent: 'CIN', points: '14.3' }
+                    ],
+                    'TE': [
+                        { name: 'Travis Kelce', team: 'KC', opponent: 'LV', points: '13.5' },
+                        { name: 'Mark Andrews', team: 'BAL', opponent: 'CLE', points: '11.8' },
+                        { name: 'George Kittle', team: 'SF', opponent: 'DAL', points: '10.9' },
+                        { name: 'T.J. Hockenson', team: 'MIN', opponent: 'LAR', points: '9.7' },
+                        { name: 'Evan Engram', team: 'JAX', opponent: 'GB', points: '8.9' }
+                    ]
+                };
+
+                const rankings = mockPlayers[position] || [];
+
+                const rankingsList = document.getElementById('rankingsList');
+                rankingsList.innerHTML = '';
+
+                rankings.forEach((player, index) => {
+                    const rankingItem = document.createElement('div');
+                    rankingItem.className = 'ranking-item';
+                    rankingItem.innerHTML = `
+                        <div class="ranking-number">${index + 1}</div>
+                        <div class="player-info">
+                            <div class="player-name">${player.name}</div>
+                            <div class="player-matchup">${player.team} vs ${player.opponent}</div>
+                        </div>
+                        <div class="projected-points">${player.points} pts</div>
+                    `;
+                    rankingsList.appendChild(rankingItem);
+                });
+            } catch (error) {
+                console.error('Rankings error:', error);
+                alert('Error generating rankings. Please try again.');
+            }
+        }
+
+        async function comparePlayers() {
+            const player1Select = document.getElementById('comparePlayer1');
+            const player2Select = document.getElementById('comparePlayer2');
+            
+            const player1Data = player1Select.value.split('|');
+            const player2Data = player2Select.value.split('|');
+            
+            if (!player1Data[0] || !player2Data[0]) {
+                alert('Please select both players to compare');
+                return;
+            }
+
+            try {
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Generate mock predictions for both players
+                const player1Prediction = simulateMLPrediction({
+                    name: player1Data[0],
+                    position: player1Data[1],
+                    team: player1Data[2],
+                    opponent: 'MIA',
+                    homeAway: 'HOME',
+                    week: '8',
+                    avgPoints: 15.5,
+                    vegasTotal: 47.5
+                });
+
+                const player2Prediction = simulateMLPrediction({
+                    name: player2Data[0],
+                    position: player2Data[1],
+                    team: player2Data[2],
+                    opponent: 'NE',
+                    homeAway: 'AWAY',
+                    week: '8',
+                    avgPoints: 14.2,
+                    vegasTotal: 45.0
+                });
+
+                // Update comparison results
+                document.getElementById('player1Result').innerHTML = `
+                    <h3>${player1Data[0]}</h3>
+                    <div class="prediction-score">${player1Prediction.points.toFixed(1)}</div>
+                    <div>Fantasy Points</div>
+                    <div class="recommendation ${player1Prediction.recommendationClass}" style="margin-top: 10px; padding: 8px; border-radius: 5px;">
+                        ${player1Prediction.recommendation}
+                    </div>
+                `;
+                document.getElementById('player1Result').classList.add('show');
+
+                document.getElementById('player2Result').innerHTML = `
+                    <h3>${player2Data[0]}</h3>
+                    <div class="prediction-score">${player2Prediction.points.toFixed(1)}</div>
+                    <div>Fantasy Points</div>
+                    <div class="recommendation ${player2Prediction.recommendationClass}" style="margin-top: 10px; padding: 8px; border-radius: 5px;">
+                        ${player2Prediction.recommendation}
+                    </div>
+                `;
+                document.getElementById('player2Result').classList.add('show');
+
+                // Show analysis
+                const winner = player1Prediction.points > player2Prediction.points ? player1Data[0] : player2Data[0];
+                const difference = Math.abs(player1Prediction.points - player2Prediction.points).toFixed(1);
+                
+                document.getElementById('comparisonDetails').innerHTML = `
+                    <p><strong>Recommendation:</strong> Start <strong>${winner}</strong></p>
+                    <p><strong>Projected Difference:</strong> ${difference} fantasy points</p>
+                    <p><strong>Key Factors:</strong></p>
+                    <ul>
+                        <li>${player1Data[0]}: ${player1Prediction.analysis[1]}</li>
+                        <li>${player2Data[0]}: ${player2Prediction.analysis[1]}</li>
+                        <li>Matchup strength and game script favor ${winner}</li>
+                    </ul>
+                `;
+                document.getElementById('comparisonAnalysis').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Comparison error:', error);
+                alert('Error comparing players. Please try again.');
+            }
+        }
+
+        // Initialize with sample data
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Fantasy Football AI Predictor loaded successfully!');
+        });
+    </script>
+</body>
+</html>

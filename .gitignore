@@ -1,0 +1,58 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ML Model files (add these manually, don't track in git due to size)
+*.pkl
+models/*.pkl
+data/raw/
+data/processed/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and databases
+*.log
+*.db
+*.sqlite
+*.sqlite3
+logs/
+
+# Flask instance folder
+instance/
+
+# API Keys and secrets
+config.env
+.env.local
+.env.production
+secrets.json
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+
+# Test coverage
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Node modules (if you add any JS build tools)
+node_modules/
