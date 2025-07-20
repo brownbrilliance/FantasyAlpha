@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fantasy Football AI Predictor</title>
+    <title>FantasyAlpha - AI Fantasy Football Predictor</title>
     <style>
         * {
             margin: 0;
@@ -195,6 +195,12 @@
             color: #ffffff;
         }
 
+        .form-group select optgroup {
+            background: #16213e;
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
         .predict-btn {
             background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
             color: #ffffff;
@@ -384,6 +390,10 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
+        .player-info {
+            flex: 1;
+        }
+
         .player-name {
             font-weight: 700;
             margin-bottom: 5px;
@@ -478,6 +488,24 @@
             color: #ffffff;
         }
 
+        .data-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            color: #a0a6b8;
+        }
+
+        .data-status.real-data {
+            border-color: #00d4ff;
+            color: #00d4ff;
+        }
+
         @media (max-width: 768px) {
             .form-grid {
                 grid-template-columns: 1fr;
@@ -491,14 +519,20 @@
             .vs-text {
                 order: -1;
             }
+
+            .header h1 {
+                font-size: 2.5rem;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="data-status" id="dataStatus">Loading...</div>
+
     <div class="container">
         <div class="header">
-            <h1>🏈 Fantasy Football AI</h1>
-            <p>Advanced ML predictions for optimal lineup decisions</p>
+            <h1>🏈 FantasyAlpha</h1>
+            <p>AI-powered fantasy football predictions with real NFL data</p>
         </div>
 
         <div class="tabs">
@@ -513,28 +547,14 @@
                 <div class="form-group">
                     <label for="playerName">Select Player:</label>
                     <select id="playerName">
-                        <option value="">Choose a player...</option>
-                        <option value="Josh Allen|QB|BUF">Josh Allen (QB - BUF)</option>
-                        <option value="Lamar Jackson|QB|BAL">Lamar Jackson (QB - BAL)</option>
-                        <option value="Patrick Mahomes|QB|KC">Patrick Mahomes (QB - KC)</option>
-                        <option value="Dak Prescott|QB|DAL">Dak Prescott (QB - DAL)</option>
-                        <option value="Christian McCaffrey|RB|SF">Christian McCaffrey (RB - SF)</option>
-                        <option value="Derrick Henry|RB|BAL">Derrick Henry (RB - BAL)</option>
-                        <option value="Josh Jacobs|RB|GB">Josh Jacobs (RB - GB)</option>
-                        <option value="Saquon Barkley|RB|PHI">Saquon Barkley (RB - PHI)</option>
-                        <option value="Tyreek Hill|WR|MIA">Tyreek Hill (WR - MIA)</option>
-                        <option value="Davante Adams|WR|LV">Davante Adams (WR - LV)</option>
-                        <option value="Stefon Diggs|WR|HOU">Stefon Diggs (WR - HOU)</option>
-                        <option value="Cooper Kupp|WR|LAR">Cooper Kupp (WR - LAR)</option>
-                        <option value="Travis Kelce|TE|KC">Travis Kelce (TE - KC)</option>
-                        <option value="Mark Andrews|TE|BAL">Mark Andrews (TE - BAL)</option>
-                        <option value="George Kittle|TE|SF">George Kittle (TE - SF)</option>
+                        <option value="">Loading real players...</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="opponent">Opponent:</label>
                     <select id="opponent">
+                        <option value="">Choose opponent...</option>
                         <option value="MIA">Miami Dolphins</option>
                         <option value="NE">New England Patriots</option>
                         <option value="NYJ">New York Jets</option>
@@ -580,6 +600,7 @@
                 <div class="form-group">
                     <label for="week">Week:</label>
                     <select id="week">
+                        <option value="">Choose week...</option>
                         <option value="1">Week 1</option>
                         <option value="2">Week 2</option>
                         <option value="3">Week 3</option>
@@ -587,7 +608,7 @@
                         <option value="5">Week 5</option>
                         <option value="6">Week 6</option>
                         <option value="7">Week 7</option>
-                        <option value="8" selected>Week 8</option>
+                        <option value="8">Week 8</option>
                         <option value="9">Week 9</option>
                         <option value="10">Week 10</option>
                         <option value="11">Week 11</option>
@@ -598,17 +619,21 @@
                         <option value="16">Week 16</option>
                         <option value="17">Week 17</option>
                         <option value="18">Week 18</option>
+                        <option value="19">Wild Card</option>
+                        <option value="20">Divisional</option>
+                        <option value="21">Conference Championship</option>
+                        <option value="22">Super Bowl</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="avgPoints">Avg Points (Last 3 Games):</label>
-                    <input type="number" id="avgPoints" step="0.1" value="15.0" min="0" max="50">
+                    <input type="number" id="avgPoints" step="0.1" placeholder="Enter average points" min="0" max="50">
                 </div>
 
                 <div class="form-group">
                     <label for="vegasTotal">Vegas Game Total:</label>
-                    <input type="number" id="vegasTotal" step="0.5" value="47.5" min="30" max="70">
+                    <input type="number" id="vegasTotal" step="0.5" placeholder="Enter game total" min="30" max="70">
                 </div>
             </div>
 
@@ -649,7 +674,15 @@
                 <div class="form-group">
                     <label for="rankingWeek">Week:</label>
                     <select id="rankingWeek">
-                        <option value="8" selected>Week 8</option>
+                        <option value="">Choose week...</option>
+                        <option value="1">Week 1</option>
+                        <option value="2">Week 2</option>
+                        <option value="3">Week 3</option>
+                        <option value="4">Week 4</option>
+                        <option value="5">Week 5</option>
+                        <option value="6">Week 6</option>
+                        <option value="7">Week 7</option>
+                        <option value="8">Week 8</option>
                         <option value="9">Week 9</option>
                         <option value="10">Week 10</option>
                         <option value="11">Week 11</option>
@@ -660,6 +693,10 @@
                         <option value="16">Week 16</option>
                         <option value="17">Week 17</option>
                         <option value="18">Week 18</option>
+                        <option value="19">Wild Card</option>
+                        <option value="20">Divisional</option>
+                        <option value="21">Conference Championship</option>
+                        <option value="22">Super Bowl</option>
                     </select>
                 </div>
             </div>
@@ -679,30 +716,14 @@
                 <div class="form-group">
                     <label for="comparePlayer1">Player 1:</label>
                     <select id="comparePlayer1">
-                        <option value="">Choose first player...</option>
-                        <option value="Josh Allen|QB|BUF">Josh Allen (QB - BUF)</option>
-                        <option value="Lamar Jackson|QB|BAL">Lamar Jackson (QB - BAL)</option>
-                        <option value="Patrick Mahomes|QB|KC">Patrick Mahomes (QB - KC)</option>
-                        <option value="Christian McCaffrey|RB|SF">Christian McCaffrey (RB - SF)</option>
-                        <option value="Derrick Henry|RB|BAL">Derrick Henry (RB - BAL)</option>
-                        <option value="Tyreek Hill|WR|MIA">Tyreek Hill (WR - MIA)</option>
-                        <option value="Davante Adams|WR|LV">Davante Adams (WR - LV)</option>
-                        <option value="Travis Kelce|TE|KC">Travis Kelce (TE - KC)</option>
+                        <option value="">Loading real players...</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="comparePlayer2">Player 2:</label>
                     <select id="comparePlayer2">
-                        <option value="">Choose second player...</option>
-                        <option value="Josh Allen|QB|BUF">Josh Allen (QB - BUF)</option>
-                        <option value="Lamar Jackson|QB|BAL">Lamar Jackson (QB - BAL)</option>
-                        <option value="Patrick Mahomes|QB|KC">Patrick Mahomes (QB - KC)</option>
-                        <option value="Christian McCaffrey|RB|SF">Christian McCaffrey (RB - SF)</option>
-                        <option value="Derrick Henry|RB|BAL">Derrick Henry (RB - BAL)</option>
-                        <option value="Tyreek Hill|WR|MIA">Tyreek Hill (WR - MIA)</option>
-                        <option value="Davante Adams|WR|LV">Davante Adams (WR - LV)</option>
-                        <option value="Travis Kelce|TE|KC">Travis Kelce (TE - KC)</option>
+                        <option value="">Loading real players...</option>
                     </select>
                 </div>
             </div>
@@ -725,6 +746,9 @@
     </div>
 
     <script>
+        // Global variables
+        let realPlayersData = null;
+
         function switchTab(tabName) {
             // Hide all tab contents
             const tabContents = document.querySelectorAll('.tab-content');
@@ -739,6 +763,82 @@
 
             // Add active class to clicked tab
             event.target.classList.add('active');
+        }
+
+        async function loadRealPlayers() {
+            try {
+                console.log('🔄 Loading real players from API...');
+                const response = await fetch('/api/players');
+                
+                if (!response.ok) {
+                    console.log('⚠️ No real players available, using defaults');
+                    return;
+                }
+                
+                realPlayersData = await response.json();
+                console.log('✅ Loaded real players:', realPlayersData);
+                
+                // Update player dropdowns
+                updatePlayerDropdown('playerName', realPlayersData);
+                updatePlayerDropdown('comparePlayer1', realPlayersData);
+                updatePlayerDropdown('comparePlayer2', realPlayersData);
+                
+            } catch (error) {
+                console.error('❌ Error loading real players:', error);
+            }
+        }
+
+        function updatePlayerDropdown(dropdownId, playersData) {
+            const dropdown = document.getElementById(dropdownId);
+            if (!dropdown || !playersData) return;
+            
+            // Clear existing options except the first one
+            dropdown.innerHTML = '<option value="">Choose a player...</option>';
+            
+            // Add real players grouped by position
+            ['QB', 'RB', 'WR', 'TE'].forEach(position => {
+                if (playersData[position] && playersData[position].length > 0) {
+                    // Create optgroup for position
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = `${position} - ${getPositionName(position)}`;
+                    
+                    playersData[position].forEach(player => {
+                        const option = document.createElement('option');
+                        option.value = `${player.name}|${position}|${player.team}`;
+                        option.textContent = `${player.name} (${position} - ${player.team}) - ${player.avg_points.toFixed(1)} avg`;
+                        optgroup.appendChild(option);
+                    });
+                    
+                    dropdown.appendChild(optgroup);
+                }
+            });
+        }
+
+        function getPositionName(pos) {
+            const names = {
+                'QB': 'Quarterback',
+                'RB': 'Running Back', 
+                'WR': 'Wide Receiver',
+                'TE': 'Tight End'
+            };
+            return names[pos] || pos;
+        }
+
+        async function checkDataStatus() {
+            try {
+                const response = await fetch('/api/data-status');
+                const status = await response.json();
+                
+                const statusElement = document.getElementById('dataStatus');
+                if (status.real_data_available) {
+                    statusElement.textContent = `Real Data: ${status.data_records} records`;
+                    statusElement.classList.add('real-data');
+                } else {
+                    statusElement.textContent = 'Simulation Mode';
+                }
+            } catch (error) {
+                console.error('Error checking data status:', error);
+            }
         }
 
         async function predictPlayer() {
@@ -767,36 +867,61 @@
             document.getElementById('weatherInfo').classList.remove('show');
 
             try {
-                // Simulate API call (replace with real API endpoint)
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                // Simulate ML prediction based on inputs
-                const prediction = simulateMLPrediction(playerData);
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(playerData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
                 
                 // Hide loading
                 document.getElementById('loading').classList.remove('show');
                 
                 // Show results
-                document.getElementById('predictionScore').textContent = prediction.points.toFixed(1);
+                document.getElementById('predictionScore').textContent = result.prediction;
                 document.getElementById('predictionDetails').innerHTML = `
                     <strong>AI Analysis:</strong><br>
-                    ${prediction.analysis.join('<br>')}
+                    ${result.analysis.join('<br>')}
+                    <br><br>
+                    <strong>Confidence Level:</strong> ${result.confidence}%<br>
+                    <strong>Data Source:</strong> ${result.data_source.replace('_', ' ')}<br>
+                    <strong>Model Type:</strong> ${result.model_type.replace('_', ' ')}
                 `;
                 
-                // Show recommendation
+                // Show recommendation based on prediction
+                const prediction = parseFloat(result.prediction);
                 const recommendationBadge = document.getElementById('recommendationBadge');
-                recommendationBadge.textContent = prediction.recommendation;
-                recommendationBadge.className = `recommendation ${prediction.recommendationClass}`;
+                
+                if (prediction > 20) {
+                    recommendationBadge.textContent = "🔥 MUST START";
+                    recommendationBadge.className = "recommendation must-start";
+                } else if (prediction > 15) {
+                    recommendationBadge.textContent = "✅ GOOD START";
+                    recommendationBadge.className = "recommendation good-start";
+                } else if (prediction > 10) {
+                    recommendationBadge.textContent = "⚠️ FLEX OPTION";
+                    recommendationBadge.className = "recommendation flex-option";
+                } else {
+                    recommendationBadge.textContent = "❌ BENCH";
+                    recommendationBadge.className = "recommendation bench";
+                }
                 
                 document.getElementById('predictionResult').classList.add('show');
                 
-                // Show weather simulation
+                // Show weather
                 const weatherHtml = `
                     <strong>Game Conditions:</strong><br>
-                    Temperature: ${prediction.weather.temperature}°F<br>
-                    Wind: ${prediction.weather.wind_speed} mph<br>
-                    Conditions: ${prediction.weather.conditions}<br>
-                    Fantasy Impact: ${prediction.weather.fantasy_impact}
+                    Temperature: ${result.weather.temperature}°F<br>
+                    Wind: ${result.weather.wind_speed} mph<br>
+                    Conditions: ${result.weather.conditions}<br>
+                    Fantasy Impact: ${result.weather.fantasy_impact}
                 `;
                 document.getElementById('weatherDetails').innerHTML = weatherHtml;
                 document.getElementById('weatherInfo').classList.add('show');
@@ -808,123 +933,25 @@
             }
         }
 
-        function simulateMLPrediction(playerData) {
-            // Base scoring by position
-            const positionBase = {
-                'QB': { min: 12, max: 28, avg: 18 },
-                'RB': { min: 5, max: 25, avg: 12 },
-                'WR': { min: 3, max: 22, avg: 10 },
-                'TE': { min: 2, max: 18, avg: 8 }
-            };
-
-            const base = positionBase[playerData.position] || positionBase['WR'];
-            let prediction = base.avg;
-
-            // Adjust for recent performance
-            prediction += (playerData.avgPoints - base.avg) * 0.3;
-
-            // Vegas total adjustment
-            const vegasImpact = (playerData.vegasTotal - 47) * 0.2;
-            prediction += vegasImpact;
-
-            // Home/away adjustment
-            if (playerData.homeAway === 'HOME') {
-                prediction += 1.2;
-            }
-
-            // Team-specific adjustments
-            const teamBoosts = {
-                'BUF': 2, 'KC': 1.8, 'BAL': 1.5, 'SF': 1.3, 'DAL': 1.2,
-                'GB': 1.1, 'MIA': 1.0, 'PHI': 0.9
-            };
-            prediction += teamBoosts[playerData.team] || 0;
-
-            // Add some randomness for realism
-            prediction += (Math.random() - 0.5) * 3;
-            prediction = Math.max(0, prediction);
-
-            // Generate analysis
-            const analysis = [
-                `${playerData.position} averages ${base.avg} points in similar matchups`,
-                `Recent form (${playerData.avgPoints} avg) suggests ${playerData.avgPoints > base.avg ? 'positive' : 'negative'} trend`,
-                `Vegas total of ${playerData.vegasTotal} indicates ${playerData.vegasTotal > 47 ? 'high-scoring' : 'low-scoring'} game`,
-                `${playerData.homeAway === 'HOME' ? 'Home field advantage' : 'Road game challenges'} factored in`
-            ];
-
-            // Recommendation logic
-            let recommendation, recommendationClass;
-            if (prediction > 18) {
-                recommendation = "🔥 MUST START";
-                recommendationClass = "must-start";
-            } else if (prediction > 12) {
-                recommendation = "✅ GOOD START";
-                recommendationClass = "good-start";
-            } else if (prediction > 8) {
-                recommendation = "⚠️ FLEX OPTION";
-                recommendationClass = "flex-option";
-            } else {
-                recommendation = "❌ BENCH";
-                recommendationClass = "bench";
-            }
-
-            // Weather simulation
-            const weather = {
-                temperature: Math.floor(Math.random() * 40) + 40,
-                wind_speed: Math.floor(Math.random() * 15) + 3,
-                conditions: ['Clear', 'Partly Cloudy', 'Overcast', 'Light Rain'][Math.floor(Math.random() * 4)],
-                fantasy_impact: ['Minimal', 'Slight Negative', 'Moderate Negative'][Math.floor(Math.random() * 3)]
-            };
-
-            return {
-                points: prediction,
-                analysis,
-                recommendation,
-                recommendationClass,
-                weather
-            };
-        }
-
         async function generateRankings() {
             const position = document.getElementById('rankingPosition').value;
             const week = document.getElementById('rankingWeek').value;
             
             try {
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                // Generate mock rankings
-                const mockPlayers = {
-                    'QB': [
-                        { name: 'Josh Allen', team: 'BUF', opponent: 'MIA', points: '24.8' },
-                        { name: 'Lamar Jackson', team: 'BAL', opponent: 'CLE', points: '23.2' },
-                        { name: 'Patrick Mahomes', team: 'KC', opponent: 'LV', points: '22.1' },
-                        { name: 'Josh Jacobs', team: 'GB', opponent: 'ARI', points: '21.5' },
-                        { name: 'Dak Prescott', team: 'DAL', opponent: 'SF', points: '20.8' }
-                    ],
-                    'RB': [
-                        { name: 'Christian McCaffrey', team: 'SF', opponent: 'DAL', points: '19.2' },
-                        { name: 'Derrick Henry', team: 'BAL', opponent: 'CLE', points: '17.8' },
-                        { name: 'Saquon Barkley', team: 'PHI', opponent: 'CIN', points: '16.5' },
-                        { name: 'Josh Jacobs', team: 'GB', opponent: 'ARI', points: '15.9' },
-                        { name: 'Alvin Kamara', team: 'NO', opponent: 'LAC', points: '14.7' }
-                    ],
-                    'WR': [
-                        { name: 'Tyreek Hill', team: 'MIA', opponent: 'BUF', points: '16.8' },
-                        { name: 'Davante Adams', team: 'LV', opponent: 'KC', points: '15.9' },
-                        { name: 'Stefon Diggs', team: 'HOU', opponent: 'IND', points: '15.2' },
-                        { name: 'Cooper Kupp', team: 'LAR', opponent: 'SEA', points: '14.8' },
-                        { name: 'A.J. Brown', team: 'PHI', opponent: 'CIN', points: '14.3' }
-                    ],
-                    'TE': [
-                        { name: 'Travis Kelce', team: 'KC', opponent: 'LV', points: '13.5' },
-                        { name: 'Mark Andrews', team: 'BAL', opponent: 'CLE', points: '11.8' },
-                        { name: 'George Kittle', team: 'SF', opponent: 'DAL', points: '10.9' },
-                        { name: 'T.J. Hockenson', team: 'MIN', opponent: 'LAR', points: '9.7' },
-                        { name: 'Evan Engram', team: 'JAX', opponent: 'GB', points: '8.9' }
-                    ]
-                };
+                const response = await fetch('/api/rankings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ position, week })
+                });
 
-                const rankings = mockPlayers[position] || [];
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const rankings = result.rankings;
 
                 const rankingsList = document.getElementById('rankingsList');
                 rankingsList.innerHTML = '';
@@ -942,6 +969,7 @@
                     `;
                     rankingsList.appendChild(rankingItem);
                 });
+                
             } catch (error) {
                 console.error('Rankings error:', error);
                 alert('Error generating rankings. Please try again.');
@@ -961,65 +989,58 @@
             }
 
             try {
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                // Generate mock predictions for both players
-                const player1Prediction = simulateMLPrediction({
-                    name: player1Data[0],
-                    position: player1Data[1],
-                    team: player1Data[2],
-                    opponent: 'MIA',
-                    homeAway: 'HOME',
-                    week: '8',
-                    avgPoints: 15.5,
-                    vegasTotal: 47.5
+                const response = await fetch('/api/compare', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        player1: {
+                            name: player1Data[0],
+                            position: player1Data[1],
+                            team: player1Data[2]
+                        },
+                        player2: {
+                            name: player2Data[0],
+                            position: player2Data[1],
+                            team: player2Data[2]
+                        }
+                    })
                 });
 
-                const player2Prediction = simulateMLPrediction({
-                    name: player2Data[0],
-                    position: player2Data[1],
-                    team: player2Data[2],
-                    opponent: 'NE',
-                    homeAway: 'AWAY',
-                    week: '8',
-                    avgPoints: 14.2,
-                    vegasTotal: 45.0
-                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
 
                 // Update comparison results
                 document.getElementById('player1Result').innerHTML = `
-                    <h3>${player1Data[0]}</h3>
-                    <div class="prediction-score">${player1Prediction.points.toFixed(1)}</div>
+                    <h3>${result.player1.name}</h3>
+                    <div class="prediction-score">${result.player1.prediction}</div>
                     <div>Fantasy Points</div>
-                    <div class="recommendation ${player1Prediction.recommendationClass}" style="margin-top: 10px; padding: 8px; border-radius: 5px;">
-                        ${player1Prediction.recommendation}
-                    </div>
                 `;
                 document.getElementById('player1Result').classList.add('show');
 
                 document.getElementById('player2Result').innerHTML = `
-                    <h3>${player2Data[0]}</h3>
-                    <div class="prediction-score">${player2Prediction.points.toFixed(1)}</div>
+                    <h3>${result.player2.name}</h3>
+                    <div class="prediction-score">${result.player2.prediction}</div>
                     <div>Fantasy Points</div>
-                    <div class="recommendation ${player2Prediction.recommendationClass}" style="margin-top: 10px; padding: 8px; border-radius: 5px;">
-                        ${player2Prediction.recommendation}
-                    </div>
                 `;
                 document.getElementById('player2Result').classList.add('show');
 
                 // Show analysis
-                const winner = player1Prediction.points > player2Prediction.points ? player1Data[0] : player2Data[0];
-                const difference = Math.abs(player1Prediction.points - player2Prediction.points).toFixed(1);
+                const winner = result.player1.prediction > result.player2.prediction ? result.player1.name : result.player2.name;
+                const difference = Math.abs(result.player1.prediction - result.player2.prediction).toFixed(1);
                 
                 document.getElementById('comparisonDetails').innerHTML = `
                     <p><strong>Recommendation:</strong> Start <strong>${winner}</strong></p>
                     <p><strong>Projected Difference:</strong> ${difference} fantasy points</p>
                     <p><strong>Key Factors:</strong></p>
-                    <ul>
-                        <li>${player1Data[0]}: ${player1Prediction.analysis[1]}</li>
-                        <li>${player2Data[0]}: ${player2Prediction.analysis[1]}</li>
-                        <li>Matchup strength and game script favor ${winner}</li>
+                    <ul style="color: #a0a6b8; margin-left: 20px; margin-top: 10px;">
+                        <li>${result.player1.name}: ${result.player1.analysis[0]}</li>
+                        <li>${result.player2.name}: ${result.player2.analysis[0]}</li>
+                        <li>Matchup analysis and game script favor ${winner}</li>
                     </ul>
                 `;
                 document.getElementById('comparisonAnalysis').style.display = 'block';
@@ -1030,9 +1051,103 @@
             }
         }
 
-        // Initialize with sample data
+        // Auto-fill average points when player is selected
+        document.getElementById('playerName').addEventListener('change', function() {
+            updateFieldsBasedOnSelection();
+        });
+
+        // Auto-fill vegas total when opponent/week changes
+        document.getElementById('opponent').addEventListener('change', function() {
+            updateFieldsBasedOnSelection();
+        });
+
+        document.getElementById('week').addEventListener('change', function() {
+            updateFieldsBasedOnSelection();
+        });
+
+        function updateFieldsBasedOnSelection() {
+            const playerSelect = document.getElementById('playerName');
+            const selectedValue = playerSelect.value;
+            
+            // Update average points based on player
+            if (selectedValue && realPlayersData) {
+                const [playerName, position, team] = selectedValue.split('|');
+                
+                // Find the player in our data and auto-fill their average
+                if (realPlayersData[position]) {
+                    const player = realPlayersData[position].find(p => 
+                        p.name === playerName && p.team === team
+                    );
+                    
+                    if (player) {
+                        document.getElementById('avgPoints').value = player.avg_points.toFixed(1);
+                    }
+                }
+            }
+
+            // Update vegas total based on matchup
+            updateVegasTotal();
+        }
+
+        function updateVegasTotal() {
+            const playerSelect = document.getElementById('playerName');
+            const opponent = document.getElementById('opponent').value;
+            const week = document.getElementById('week').value;
+            
+            if (playerSelect.value && opponent && week) {
+                const [playerName, position, team] = playerSelect.value.split('|');
+                
+                // Generate realistic vegas total based on teams and context
+                const vegasTotal = generateVegasTotal(team, opponent, week);
+                document.getElementById('vegasTotal').value = vegasTotal;
+            }
+        }
+
+        function generateVegasTotal(homeTeam, awayTeam, week) {
+            // Base totals for different team matchups (simulated realistic data)
+            const teamOffenseRatings = {
+                'KC': 28, 'BUF': 27, 'MIA': 26, 'CIN': 25, 'DAL': 27, 'SF': 26,
+                'PHI': 25, 'LAR': 24, 'TB': 24, 'GB': 23, 'LAC': 23, 'BAL': 25,
+                'MIN': 22, 'DET': 24, 'NYJ': 20, 'NE': 19, 'WAS': 21, 'ATL': 22,
+                'NO': 21, 'CAR': 19, 'JAX': 20, 'TEN': 19, 'IND': 21, 'HOU': 22,
+                'CLE': 20, 'PIT': 21, 'DEN': 20, 'LV': 21, 'ARI': 19, 'SEA': 22,
+                'CHI': 18, 'NYG': 18
+            };
+
+            const homeOffense = teamOffenseRatings[homeTeam] || 21;
+            const awayOffense = teamOffenseRatings[awayTeam] || 21;
+            
+            // Base total from team offensive capabilities
+            let total = homeOffense + awayOffense;
+            
+            // Add home field advantage
+            total += 1.5;
+            
+            // Adjust for week (early season = higher, late season = lower due to weather)
+            const weekNum = parseInt(week);
+            if (weekNum <= 4) total += 1; // Early season offensive showcase
+            else if (weekNum >= 13) total -= 1.5; // Late season weather/defenses tighten
+            
+            // Add some variance for realism
+            const variance = (Math.random() - 0.5) * 4; // +/- 2 points
+            total += variance;
+            
+            // Round to nearest 0.5
+            total = Math.round(total * 2) / 2;
+            
+            // Keep within realistic bounds
+            return Math.max(37.5, Math.min(57.5, total));
+        }
+
+        // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Fantasy Football AI Predictor loaded successfully!');
+            console.log('🏈 FantasyAlpha loaded - initializing...');
+            
+            // Load real players and check data status
+            loadRealPlayers();
+            checkDataStatus();
+            
+            console.log('✅ FantasyAlpha initialization complete');
         });
     </script>
 </body>
