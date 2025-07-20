@@ -1,7 +1,8 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
 
 # Virtual environments
 .env
@@ -12,7 +13,7 @@ ENV/
 env.bak/
 venv.bak/
 
-# ML Model files (add these manually, don't track in git due to size)
+# ML Model files (add manually due to size)
 *.pkl
 models/*.pkl
 data/raw/
@@ -35,7 +36,7 @@ Thumbs.db
 *.sqlite3
 logs/
 
-# Flask instance folder
+# Flask
 instance/
 
 # API Keys and secrets
@@ -44,15 +45,10 @@ config.env
 .env.production
 secrets.json
 
-# Temporary files
-*.tmp
-*.temp
-temp/
-
 # Test coverage
 htmlcov/
 .coverage
 .pytest_cache/
 
-# Node modules (if you add any JS build tools)
+# Node modules
 node_modules/
